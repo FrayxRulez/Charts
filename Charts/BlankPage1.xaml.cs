@@ -1,4 +1,5 @@
 ﻿using Charts.Data;
+using Charts.DataView;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -41,26 +42,21 @@ namespace Charts
             var json = JsonConvert.DeserializeObject<TLStatsBroadcastStats>(text);
 
             var obj = JsonObject.Parse(json.FollowersGraph.Json.Data);
-            var data = new ChartData(obj);
+            var data = new StackBarChartData(obj);
 
             test.setData(data);
             test.onCheckChanged();
+
+            Checks.ItemsSource = test.lines;
         }
 
-        private void MinX_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
-            //test.onPickerJumpTo((float)e.NewValue / 100, (float)MaxX.Value / 100, true);
-
-            test.pickerDelegate.pickerStart = (float)e.NewValue / 100;
-            test.onPickerDataChanged();
-        }
-
-        private void MaxX_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            //test.onPickerJumpTo((float)MinX.Value / 100, (float)e.NewValue / 100, true);
-
-            test.pickerDelegate.pickerEnd = (float)e.NewValue / 100;
-            test.onPickerDataChanged();
+            if (sender is CheckBox check && check.DataContext is LineViewData column)
+            {
+                column.enabled = check.IsChecked == true;
+                test.onCheckChanged();
+            }
         }
     }
 

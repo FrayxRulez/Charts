@@ -24,7 +24,7 @@ namespace Charts
     {
 
         public SharedUiComponents sharedUiComponents;
-        List<ChartHorizontalLinesData> horizontalLines = new List<ChartHorizontalLinesData>(10);
+        protected List<ChartHorizontalLinesData> horizontalLines = new List<ChartHorizontalLinesData>(10);
         List<ChartBottomSignatureData> bottomSignatureDate = new List<ChartBottomSignatureData>(25);
 
         public List<L> lines = new List<L>();
@@ -49,10 +49,10 @@ namespace Charts
         private const int DP_1 = 1;
 
         protected bool drawPointOnSelection = true;
-        float signaturePaintAlpha;
+        protected float signaturePaintAlpha;
         float bottomSignaturePaintAlpha;
         int hintLinePaintAlpha;
-        int chartActiveLineAlpha;
+        protected int chartActiveLineAlpha;
 
         //public const bool USE_LINES = android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.P;
         public const bool USE_LINES = false;
@@ -72,7 +72,7 @@ namespace Charts
 
         protected int startXIndex;
         protected int endXIndex;
-        bool invalidatePickerChart = true;
+        protected bool invalidatePickerChart = true;
 
         bool landscape = false;
 
@@ -81,19 +81,16 @@ namespace Charts
 
         Color emptyPaint;
 
-        Color linePaint;
-        Color selectedLinePaint;
-        Color signaturePaint;
-        CanvasTextFormat signaturePaintFormat = new CanvasTextFormat();
-        Color signaturePaint2;
-        CanvasTextFormat signaturePaint2Format = new CanvasTextFormat();
-        Color bottomSignaturePaint;
-        CanvasTextFormat bottomSignaturePaintFormat = new CanvasTextFormat();
-        Color pickerSelectorPaint;
-        Color unactiveBottomChartPaint;
-        Color selectionBackgroundPaint;
-        Color ripplePaint;
-        Color whiteLinePaint;
+        protected Paint linePaint = new Paint();
+        protected Paint selectedLinePaint = new Paint();
+        protected Paint signaturePaint = new Paint();
+        protected Paint signaturePaint2 = new Paint();
+        Paint bottomSignaturePaint = new Paint();
+        Paint pickerSelectorPaint = new Paint();
+        Paint unactiveBottomChartPaint = new Paint();
+        protected Paint selectionBackgroundPaint = new Paint();
+        Paint ripplePaint = new Paint();
+        Paint whiteLinePaint = new Paint();
 
         Rect pickerRect = new Rect();
         CanvasPathBuilder pathTmp;
@@ -102,9 +99,9 @@ namespace Charts
 
         ValueAnimator alphaAnimator;
         ValueAnimator alphaBottomAnimator;
-        Animator pickerAnimator;
+        protected Animator pickerAnimator;
         ValueAnimator selectionAnimator;
-        bool postTransition = false;
+        protected bool postTransition = false;
 
         public ChartPickerDelegate pickerDelegate;
         protected T chartData;
@@ -130,8 +127,8 @@ namespace Charts
 
         public float selectionA = 0f;
 
-        bool superDraw = false;
-        bool useAlphaSignature = false;
+        protected bool superDraw = false;
+        protected bool useAlphaSignature = false;
 
         public int transitionMode = TRANSITION_MODE_NONE;
         public TransitionParams transitionParams;
@@ -265,17 +262,17 @@ namespace Charts
             Children.Add(canvas);
             //Children.Add(grid);
 
-            //linePaint.setStrokeWidth(LINE_WIDTH);
-            //selectedLinePaint.setStrokeWidth(SELECTED_LINE_WIDTH);
+            linePaint.StrokeWidth = LINE_WIDTH;
+            selectedLinePaint.StrokeWidth = SELECTED_LINE_WIDTH;
 
-            signaturePaintFormat.FontSize = SIGNATURE_TEXT_SIZE;
-            signaturePaint2Format.FontSize = SIGNATURE_TEXT_SIZE;
-            signaturePaint2Format.HorizontalAlignment = CanvasHorizontalAlignment.Right;
-            bottomSignaturePaintFormat.FontSize = SIGNATURE_TEXT_SIZE;
-            bottomSignaturePaintFormat.HorizontalAlignment = CanvasHorizontalAlignment.Center;
+            signaturePaint.TextSize = SIGNATURE_TEXT_SIZE;
+            signaturePaint2.TextSize = SIGNATURE_TEXT_SIZE;
+            signaturePaint2.TextAlignment = CanvasHorizontalAlignment.Right;
+            bottomSignaturePaint.TextSize = SIGNATURE_TEXT_SIZE;
+            bottomSignaturePaint.TextAlignment = CanvasHorizontalAlignment.Center;
 
-            //selectionBackgroundPaint.setStrokeWidth(AndroidUtilities.dpf2(6f));
-            //selectionBackgroundPaint.setStrokeCap(Paint.Cap.ROUND);
+            selectionBackgroundPaint.StrokeWidth = 6;
+            selectionBackgroundPaint.StrokeCap = CanvasCapStyle.Round;
 
             //setLayerType(LAYER_TYPE_HARDWARE, null);
             //setWillNotDraw(false);
@@ -285,22 +282,19 @@ namespace Charts
 
             legendSignatureView.setVisibility(Visibility.Collapsed);
 
-#if PICKER
-            whiteLinePaint.setColor(Color.WHITE);
-            whiteLinePaint.setStrokeWidth(AndroidUtilities.dpf2(3));
-            whiteLinePaint.setStrokeCap(Paint.Cap.ROUND);
-#endif
-            whiteLinePaint = Colors.White;
+            whiteLinePaint.Color = Colors.White;
+            whiteLinePaint.StrokeWidth = 3;
+            whiteLinePaint.StrokeCap = CanvasCapStyle.Round;
 
             updateColors();
         }
 
-        protected LegendSignatureView createLegendView()
+        protected virtual LegendSignatureView createLegendView()
         {
             return new LegendSignatureView();
         }
 
-        private static Dictionary<string, Color> _colors = new Dictionary<string, Color>
+        protected static Dictionary<string, Color> _colors = new Dictionary<string, Color>
         {
             { "key_statisticChartSignatureAlpha", Color.FromArgb(0x7f, 0x25, 0x25, 0x29) },
             { "key_statisticChartSignature", Color.FromArgb(0x7f, 0x25, 0x25, 0x29) },
@@ -308,7 +302,7 @@ namespace Charts
             { "key_statisticChartActiveLine", Color.FromArgb(0x33, 0x00, 0x00, 0x00) },
             { "key_statisticChartActivePickerChart", Color.FromArgb(0xd8, 0xba, 0xcc, 0xd9) },
             { "key_statisticChartInactivePickerChart", Color.FromArgb(0x99, 0xe2, 0xee, 0xf9) },
-
+            { "key_windowBackgroundWhite", Colors.White },
             { "key_statisticChartRipple", Color.FromArgb(0x2c, 0x7e, 0x9d, 0xb7) },
         };
 
@@ -316,20 +310,20 @@ namespace Charts
         {
             if (useAlphaSignature)
             {
-                signaturePaint = _colors["key_statisticChartSignatureAlpha"];
+                signaturePaint.Color = _colors["key_statisticChartSignatureAlpha"];
             }
             else
             {
-                signaturePaint = _colors["key_statisticChartSignature"];
+                signaturePaint.Color = _colors["key_statisticChartSignature"];
             }
 
-            bottomSignaturePaint = _colors["key_statisticChartSignature"];
-            linePaint = _colors["key_statisticChartHintLine"];
-            selectedLinePaint = _colors["key_statisticChartActiveLine"];
-            pickerSelectorPaint = _colors["key_statisticChartActivePickerChart"];
-            unactiveBottomChartPaint = _colors["key_statisticChartInactivePickerChart"];
-            //selectionBackgroundPaint = _colors["key_windowBackgroundWhite"];
-            ripplePaint = _colors["key_statisticChartRipple"];
+            bottomSignaturePaint.Color = _colors["key_statisticChartSignature"];
+            linePaint.Color = _colors["key_statisticChartHintLine"];
+            selectedLinePaint.Color = _colors["key_statisticChartActiveLine"];
+            pickerSelectorPaint.Color = _colors["key_statisticChartActivePickerChart"];
+            unactiveBottomChartPaint.Color = _colors["key_statisticChartInactivePickerChart"];
+            selectionBackgroundPaint.Color = _colors["key_windowBackgroundWhite"];
+            ripplePaint.Color = _colors["key_statisticChartRipple"];
             legendSignatureView.recolor();
 
             hintLinePaintAlpha = linePaint.A;
@@ -355,7 +349,7 @@ namespace Charts
         int lastH = 0;
 
         //@Override
-        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+        protected virtual void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
         {
             //super.onMeasure(widthMeasureSpec, heightMeasureSpec);
             //if (!landscape)
@@ -431,13 +425,13 @@ namespace Charts
 
 
         //@Override
-        protected void onDraw(CanvasDrawingSession canvas)
+        protected virtual void onDraw(CanvasDrawingSession canvas)
         {
-            //if (superDraw)
-            //{
-            //    super.onDraw(canvas);
-            //    return;
-            //}
+            if (superDraw)
+            {
+                //super.onDraw(canvas);
+                return;
+            }
             tick();
             //int count = canvas.save();
             //canvas.clipRect(0, chartArea.Top, getMeasuredWidth(), chartArea.Bottom);
@@ -507,7 +501,7 @@ namespace Charts
         }
 
 
-        void drawBottomSignature(CanvasDrawingSession canvas)
+        protected virtual void drawBottomSignature(CanvasDrawingSession canvas)
         {
             if (chartData == null) return;
 
@@ -575,13 +569,13 @@ namespace Charts
                         {
                             bottomSignaturePaint.A = (byte)(resultAlpha * bottomSignaturePaintAlpha * transitionAlpha);
                         }
-                        canvas.DrawText(chartData.getDayString(i), xPoint, getMeasuredHeight() - chartBottom + BOTTOM_SIGNATURE_TEXT_HEIGHT + 3, bottomSignaturePaint, bottomSignaturePaintFormat);
+                        canvas.DrawText(chartData.getDayString(i), xPoint, getMeasuredHeight() - chartBottom + BOTTOM_SIGNATURE_TEXT_HEIGHT + 3, bottomSignaturePaint);
                     }
                 }
             }
         }
 
-        protected void drawBottomLine(CanvasDrawingSession canvas)
+        protected virtual void drawBottomLine(CanvasDrawingSession canvas)
         {
             if (chartData == null)
             {
@@ -603,7 +597,15 @@ namespace Charts
 
             linePaint.A = (byte)(hintLinePaintAlpha * transitionAlpha);
             signaturePaint.A = (byte)(255 * signaturePaintAlpha * transitionAlpha);
-            int textOffset = (int)(SIGNATURE_TEXT_HEIGHT - signaturePaintFormat.FontSize);
+
+            var format = new CanvasTextFormat { FontSize = signaturePaint.TextSize ?? 0 };
+            var layout = new CanvasTextLayout(canvas, "0", format, 0, 0);
+
+            int textOffset = (int)(4 + layout.DrawBounds.Bottom);
+            //int textOffset = (int)(SIGNATURE_TEXT_HEIGHT - signaturePaintFormat.FontSize);
+            format.Dispose();
+            layout.Dispose();
+
             int y = (getMeasuredHeight() - chartBottom - 1);
             canvas.DrawLine(
                     chartStart,
@@ -613,10 +615,10 @@ namespace Charts
                     linePaint);
             if (useMinHeight) return;
 
-            canvas.DrawText("0", HORIZONTAL_PADDING, y - textOffset, signaturePaint, signaturePaintFormat);
+            canvas.DrawText("0", HORIZONTAL_PADDING, y - textOffset, signaturePaint);
         }
 
-        protected void drawSelection(CanvasDrawingSession canvas)
+        protected virtual void drawSelection(CanvasDrawingSession canvas)
         {
             if (selectedIndex < 0 || !legendShowing || chartData == null) return;
 
@@ -637,7 +639,7 @@ namespace Charts
             }
 
             selectedLinePaint.A = alpha;
-            canvas.DrawLine(xPoint, 0, xPoint, (float)chartArea.Bottom, selectedLinePaint, SELECTED_LINE_WIDTH);
+            canvas.DrawLine(xPoint, 0, xPoint, (float)chartArea.Bottom, selectedLinePaint);
 
             if (drawPointOnSelection)
             {
@@ -649,11 +651,13 @@ namespace Charts
                     float yPercentage = (line.line.y[selectedIndex] - currentMinHeight) / (currentMaxHeight - currentMinHeight);
                     float yPoint = getMeasuredHeight() - chartBottom - (yPercentage) * (getMeasuredHeight() - chartBottom - SIGNATURE_TEXT_HEIGHT);
 
-                    //line.selectionPaint.A = (byte)(255 * line.alpha * selectionA);
-                    //selectionBackgroundPaint.A = (byte)(255 * line.alpha * selectionA);
+                    line.selectionPaint.A = (byte)(255 * line.alpha * selectionA);
+                    selectionBackgroundPaint.A = (byte)(255 * line.alpha * selectionA);
 
                     //canvas.DrawPoint(xPoint, yPoint, line.selectionPaint);
                     //canvas.DrawPoint(xPoint, yPoint, selectionBackgroundPaint);
+                    canvas.FillCircle(xPoint, yPoint, line.selectionPaint);
+                    canvas.FillCircle(xPoint, yPoint, selectionBackgroundPaint);
                 }
             }
         }
@@ -662,7 +666,7 @@ namespace Charts
         {
         }
 
-        protected void drawHorizontalLines(CanvasDrawingSession canvas, ChartHorizontalLinesData a)
+        protected virtual void drawHorizontalLines(CanvasDrawingSession canvas, ChartHorizontalLinesData a)
         {
             int n = a.values.Length;
 
@@ -696,11 +700,11 @@ namespace Charts
             {
                 int y = (int)((getMeasuredHeight() - chartBottom) - chartHeight * ((a.values[i] - currentMinHeight) / (currentMaxHeight - currentMinHeight)));
                 //canvas.DrawRectangle(chartStart, y, chartEnd - chartStart, 2, linePaint, LINE_WIDTH);
-                canvas.DrawLine(chartStart, y, chartEnd - chartStart, y, linePaint, LINE_WIDTH);
+                canvas.DrawLine(chartStart, y, chartEnd - chartStart, y, linePaint);
             }
         }
 
-        protected void drawSignaturesToHorizontalLines(CanvasDrawingSession canvas, ChartHorizontalLinesData a)
+        protected virtual void drawSignaturesToHorizontalLines(CanvasDrawingSession canvas, ChartHorizontalLinesData a)
         {
             int n = a.values.Length;
 
@@ -731,18 +735,21 @@ namespace Charts
             signaturePaint.A = (byte)(a.alpha * signaturePaintAlpha * transitionAlpha * additionalOutAlpha);
             int chartHeight = getMeasuredHeight() - chartBottom - SIGNATURE_TEXT_HEIGHT;
 
-            var layout = new CanvasTextLayout(canvas, a.valuesStr[0], signaturePaintFormat, 0, 0);
+            var format = new CanvasTextFormat { FontSize = signaturePaint.TextSize ?? 0 };
+            var layout = new CanvasTextLayout(canvas, a.valuesStr[1], format, 0, 0);
 
             int textOffset = (int)(4 + layout.DrawBounds.Bottom);
             //int textOffset = (int)(SIGNATURE_TEXT_HEIGHT - signaturePaintFormat.FontSize);
+            format.Dispose();
+            layout.Dispose();
             for (int i = useMinHeight ? 0 : 1; i < n; i++)
             {
                 int y = (int)((getMeasuredHeight() - chartBottom) - chartHeight * ((a.values[i] - currentMinHeight) / (currentMaxHeight - currentMinHeight)));
-                canvas.DrawText(a.valuesStr[i], HORIZONTAL_PADDING, y - textOffset, signaturePaint, signaturePaintFormat);
+                canvas.DrawText(a.valuesStr[i], HORIZONTAL_PADDING, y - textOffset, signaturePaint);
             }
         }
 
-        void drawPicker(CanvasDrawingSession canvas)
+        protected void drawPicker(CanvasDrawingSession canvas)
         {
             if (chartData == null)
             {
@@ -874,19 +881,19 @@ namespace Charts
                 canvas.FillRectangle(createRect(HORIZONTAL_PADDING,
                         top,
                         start + DP_12,
-                        bottom), unactiveBottomChartPaint);
+                        bottom), unactiveBottomChartPaint.Color);
 
                 canvas.FillRectangle(createRect(end - DP_12,
                         top,
                         getMeasuredWidth() - HORIZONTAL_PADDING,
-                        bottom), unactiveBottomChartPaint);
+                        bottom), unactiveBottomChartPaint.Color);
             }
             else
             {
                 canvas.FillRectangle(createRect(HORIZONTAL_PADDING,
                         top,
                         getMeasuredWidth() - HORIZONTAL_PADDING,
-                        bottom), unactiveBottomChartPaint);
+                        bottom), unactiveBottomChartPaint.Color);
             }
 
             //canvas.drawBitmap(
@@ -908,28 +915,28 @@ namespace Charts
                         (float)pickerRect.Top - DP_1,
                         (float)pickerRect.Left + DP_12,
                         (float)pickerRect.Bottom + DP_1, DP_6, DP_6,
-                        true, false, false, true), pickerSelectorPaint);
+                        true, false, false, true), pickerSelectorPaint.Color);
 
 
                 canvas.FillGeometry(RoundedRect(pathTmp, canvas, (float)pickerRect.Right - DP_12,
                         (float)pickerRect.Top - DP_1, (float)pickerRect.Right,
                         (float)pickerRect.Bottom + DP_1, DP_6, DP_6,
-                        false, true, true, false), pickerSelectorPaint);
+                        false, true, true, false), pickerSelectorPaint.Color);
 
                 canvas.FillRectangle(createRect(pickerRect.Left + DP_12,
                         pickerRect.Bottom, pickerRect.Right - DP_12,
-                        pickerRect.Bottom + DP_1), pickerSelectorPaint);
+                        pickerRect.Bottom + DP_1), pickerSelectorPaint.Color);
 
                 canvas.FillRectangle(createRect(pickerRect.Left + DP_12,
                         pickerRect.Top - DP_1, pickerRect.Right - DP_12,
-                        pickerRect.Top), pickerSelectorPaint);
+                        pickerRect.Top), pickerSelectorPaint.Color);
 
 
                 canvas.DrawLine((float)pickerRect.Left + DP_6, pickerRect.centerY() - DP_6,
-                        (float)pickerRect.Left + DP_6, pickerRect.centerY() + DP_6, whiteLinePaint, 3, new CanvasStrokeStyle { StartCap = CanvasCapStyle.Round, EndCap = CanvasCapStyle.Round });
+                        (float)pickerRect.Left + DP_6, pickerRect.centerY() + DP_6, whiteLinePaint);
 
                 canvas.DrawLine((float)pickerRect.Right - DP_6, pickerRect.centerY() - DP_6,
-                        (float)pickerRect.Right - DP_6, pickerRect.centerY() + DP_6, whiteLinePaint, 3, new CanvasStrokeStyle { StartCap = CanvasCapStyle.Round, EndCap = CanvasCapStyle.Round });
+                        (float)pickerRect.Right - DP_6, pickerRect.centerY() + DP_6, whiteLinePaint);
 
 
                 ChartPickerDelegate.CapturesData middleCap = pickerDelegate.getMiddleCaptured();
@@ -947,9 +954,9 @@ namespace Charts
                     ChartPickerDelegate.CapturesData rCap = pickerDelegate.getRightCaptured();
 
                     if (lCap != null)
-                        canvas.FillCircle((float)pickerRect.Left + DP_5, cY, r * lCap.aValue - DP_2, ripplePaint);
+                        canvas.FillCircle((float)pickerRect.Left + DP_5, cY, r * lCap.aValue - DP_2, ripplePaint.Color);
                     if (rCap != null)
-                        canvas.FillCircle((float)pickerRect.Right - DP_5, cY, r * rCap.aValue - DP_2, ripplePaint);
+                        canvas.FillCircle((float)pickerRect.Right - DP_5, cY, r * rCap.aValue - DP_2, ripplePaint.Color);
                 }
 
                 int cX = start;
@@ -1111,12 +1118,12 @@ namespace Charts
             alphaAnimator.start();
         }
 
-        protected ChartHorizontalLinesData createHorizontalLinesData(int newMaxHeight, int newMinHeight)
+        protected virtual ChartHorizontalLinesData createHorizontalLinesData(int newMaxHeight, int newMinHeight)
         {
             return new ChartHorizontalLinesData(newMaxHeight, newMinHeight, useMinHeight);
         }
 
-        ValueAnimator createAnimator(float f1, float f2, AnimatorUpdateListener l)
+        protected ValueAnimator createAnimator(float f1, float f2, AnimatorUpdateListener l)
         {
             ValueAnimator a = ValueAnimator.ofFloat(f1, f2);
             a.setDuration(ANIM_DURATION);
@@ -1125,7 +1132,7 @@ namespace Charts
             return a;
         }
 
-        Rect createRect(double x1, double y1, double x2, double y2)
+        protected Rect createRect(double x1, double y1, double x2, double y2)
         {
             return new Rect(x1, y1, x2 - x1, y2 - y1);
         }
@@ -1139,6 +1146,9 @@ namespace Charts
 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
+            // TODO: multi touch?
+            // pickerDelegate.capture(x, y, @event.getActionIndex());
+
             var point = args.GetCurrentPoint(this);
 
             int x = (int)point.Position.X;
@@ -1241,6 +1251,9 @@ namespace Charts
 
         private void OnPointerReleased(object sender, PointerRoutedEventArgs args)
         {
+            // TODO: multi-touch?
+            //pickerDelegate.uncapture(@event, @event.getActionIndex());
+
             if (pickerDelegate.uncapture(args.GetCurrentPoint(this), 0))
             {
                 return /*true*/;
@@ -1262,136 +1275,12 @@ namespace Charts
             return /*true*/;
         }
 
-#if TOUCH
-        //@Override
-        public bool onTouchEvent(MotionEvent @event)
-        {
-            if (chartData == null)
-            {
-                return false;
-            }
-            if (!enabled)
-            {
-                pickerDelegate.uncapture(@event, @event.getActionIndex());
-                getParent().requestDisallowInterceptTouchEvent(false);
-                chartCaptured = false;
-                return false;
-            }
-
-
-            int x = (int)@event.getX(@event.getActionIndex());
-            int y = (int)@event.getY(@event.getActionIndex());
-
-            switch (@event.getActionMasked())
-            {
-                case MotionEvent.ACTION_DOWN:
-                    capturedTime = DateTime.Now.ToTimestamp() * 1000;
-                    getParent().requestDisallowInterceptTouchEvent(true);
-                    bool captured = pickerDelegate.capture(x, y, @event.getActionIndex());
-                    if (captured)
-                    {
-                        return true;
-                    }
-
-                    capturedX = lastX = x;
-                    capturedY = lastY = y;
-
-                    if (chartArea.Contains(new Point(x, y)))
-                    {
-                        if (selectedIndex < 0 || !animateLegentTo)
-                        {
-                            chartCaptured = true;
-                            selectXOnChart(x, y);
-                        }
-                        return true;
-                    }
-                    return false;
-                case MotionEvent.ACTION_POINTER_DOWN:
-                    return pickerDelegate.capture(x, y, @event.getActionIndex());
-                case MotionEvent.ACTION_MOVE:
-                    int dx = x - lastX;
-                    int dy = y - lastY;
-
-                    if (pickerDelegate.captured())
-                    {
-                        bool rez = pickerDelegate.move(x, y, @event.getActionIndex());
-                        if (@event.getPointerCount() > 1)
-                        {
-                            x = (int)@event.getX(1);
-                            y = (int)@event.getY(1);
-                            pickerDelegate.move(x, y, 1);
-                        }
-
-                        getParent().requestDisallowInterceptTouchEvent(rez);
-
-                        return true;
-                    }
-
-                    if (chartCaptured)
-                    {
-                        bool disable;
-                        if (canCaptureChartSelection && DateTime.Now.ToTimestamp() * 1000 - capturedTime > 200)
-                        {
-                            disable = true;
-                        }
-                        else
-                        {
-                            disable = Math.Abs(dx) > Math.Abs(dy) || Math.Abs(dy) < touchSlop;
-                        }
-                        lastX = x;
-                        lastY = y;
-
-                        getParent().requestDisallowInterceptTouchEvent(disable);
-                        selectXOnChart(x, y);
-                    }
-                    else if (chartArea.Contains(new Point(capturedX, capturedY)))
-                    {
-                        int dxCaptured = capturedX - x;
-                        int dyCaptured = capturedY - y;
-                        if (Math.Sqrt(dxCaptured * dxCaptured + dyCaptured * dyCaptured) > touchSlop || DateTime.Now.ToTimestamp() * 1000 - capturedTime > 200)
-                        {
-                            chartCaptured = true;
-                            selectXOnChart(x, y);
-                        }
-                    }
-                    return true;
-                case MotionEvent.ACTION_POINTER_UP:
-                    pickerDelegate.uncapture(@event, @event.getActionIndex());
-                    return true;
-                case MotionEvent.ACTION_CANCEL:
-                case MotionEvent.ACTION_UP:
-                    if (pickerDelegate.uncapture(@event, @event.getActionIndex()))
-                    {
-                        return true;
-                    }
-                    if (chartArea.Contains(new Point(capturedX, capturedY)) && !chartCaptured)
-                    {
-                        animateLegend(false);
-                    }
-                    pickerDelegate.uncapture();
-                    updateLineSignature();
-                    getParent().requestDisallowInterceptTouchEvent(false);
-                    chartCaptured = false;
-                    onActionUp();
-                    invalidate();
-                    int min = 0;
-                    if (useMinHeight) min = findMinValue(startXIndex, endXIndex);
-                    setMaxMinValue(findMaxValue(startXIndex, endXIndex), min, true, true, false);
-                    return true;
-
-
-            }
-
-            return false;
-        }
-#endif
-
-        protected void onActionUp()
+        protected virtual void onActionUp()
         {
 
         }
 
-        protected void selectXOnChart(int x, int y)
+        protected virtual void selectXOnChart(int x, int y)
         {
             int oldSelectedX = selectedIndex;
             if (chartData == null) return;
@@ -1489,7 +1378,7 @@ namespace Charts
 #endif
         }
 
-        public int findMaxValue(int startXIndex, int endXIndex)
+        public virtual int findMaxValue(int startXIndex, int endXIndex)
         {
             int linesSize = lines.Count;
             int maxValue = 0;
@@ -1504,7 +1393,7 @@ namespace Charts
         }
 
 
-        public int findMinValue(int startXIndex, int endXIndex)
+        public virtual int findMinValue(int startXIndex, int endXIndex)
         {
             int linesSize = lines.Count;
             int minValue = int.MaxValue;
@@ -1518,7 +1407,7 @@ namespace Charts
             return minValue;
         }
 
-        public void setData(T chartData)
+        public virtual void setData(T chartData)
         {
             if (this.chartData != chartData)
             {
@@ -1594,7 +1483,7 @@ namespace Charts
             invalidate();
         }
 
-        protected float getMinDistance()
+        protected virtual float getMinDistance()
         {
             if (chartData == null)
             {
@@ -1614,7 +1503,7 @@ namespace Charts
             return r;
         }
 
-        protected void initPickerMaxHeight()
+        protected virtual void initPickerMaxHeight()
         {
             foreach (LineViewData l in lines)
             {
@@ -1635,7 +1524,7 @@ namespace Charts
             onPickerDataChanged(true, false, false);
         }
 
-        public void onPickerDataChanged(bool animated, bool force, bool useAniamtor)
+        public virtual void onPickerDataChanged(bool animated, bool force, bool useAniamtor)
         {
             if (chartData == null) return;
             chartFullWidth = (chartWidth / (pickerDelegate.pickerEnd - pickerDelegate.pickerStart));
@@ -1652,7 +1541,7 @@ namespace Charts
             invalidate();
         }
 
-        public void onPickerJumpTo(float start, float end, bool force)
+        public virtual void onPickerJumpTo(float start, float end, bool force)
         {
             if (chartData == null) return;
             if (force)
@@ -1672,12 +1561,8 @@ namespace Charts
         protected void updateIndexes()
         {
             if (chartData == null) return;
-            startXIndex = chartData.findStartIndex(Math.Max(
-                    pickerDelegate.pickerStart, 0f
-            ));
-            endXIndex = chartData.findEndIndex(startXIndex, Math.Min(
-                    pickerDelegate.pickerEnd, 1f
-            ));
+            startXIndex = chartData.findStartIndex(Math.Max(pickerDelegate.pickerStart, 0f));
+            endXIndex = chartData.findEndIndex(startXIndex, Math.Min(pickerDelegate.pickerEnd, 1f));
             //if (chartHeaderView != null)
             //{
             //    chartHeaderView.setDates(chartData.x[startXIndex], chartData.x[endXIndex]);
@@ -1773,7 +1658,7 @@ namespace Charts
             }
         }
 
-        public void onCheckChanged()
+        public virtual void onCheckChanged()
         {
             onPickerDataChanged(true, true, true);
             tmpN = lines.Count;
@@ -1827,7 +1712,7 @@ namespace Charts
                 legendSignatureView.setData(selectedIndex, chartData.x[selectedIndex], lines.Cast<LineViewData>().ToList(), true);
         }
 
-        protected void updatePickerMinMaxHeight()
+        protected virtual void updatePickerMinMaxHeight()
         {
             if (!ANIMATE_PICKER_SIZES) return;
             int max = 0;
@@ -1922,7 +1807,7 @@ namespace Charts
             return chartData.x[endXIndex];
         }
 
-        public void updatePicker(ChartData chartData, long d)
+        public virtual void updatePicker(ChartData chartData, long d)
         {
             int n = chartData.x.Length;
             long startOfDay = d - d % 86400000L;

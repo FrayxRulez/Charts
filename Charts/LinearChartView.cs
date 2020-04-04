@@ -4,6 +4,7 @@ using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Geometry;
 using System;
 using System.Numerics;
+using Unigram.Common;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -54,7 +55,7 @@ namespace Charts
                         if (y[i] < 0) continue;
                         float xPoint = chartData.xPercentage[i] * fullWidth - offset;
                         float yPercentage = ((float)y[i] - currentMinHeight) / (currentMaxHeight - currentMinHeight);
-                        float padding = line.getStrokeWidth() / 2f;
+                        float padding = line.paint.StrokeWidth / 2f;
                         float yPoint = getMeasuredHeight() - chartBottom - padding - (yPercentage) * (getMeasuredHeight() - chartBottom - SIGNATURE_TEXT_HEIGHT - padding);
 
                         if (USE_LINES)
@@ -119,18 +120,14 @@ namespace Charts
                     line.paint.A = (byte)(255 * line.alpha * transitionAlpha);
                     if (endXIndex - startXIndex > 100)
                     {
-                        line.style.StartCap = CanvasCapStyle.Square;
-                        line.style.EndCap = CanvasCapStyle.Square;
-                        line.style.LineJoin = CanvasLineJoin.Miter;
+                        line.paint.StrokeCap = CanvasCapStyle.Square;
                     }
                     else
                     {
-                        line.style.StartCap = CanvasCapStyle.Round;
-                        line.style.EndCap = CanvasCapStyle.Round;
-                        line.style.LineJoin = CanvasLineJoin.Round;
+                        line.paint.StrokeCap = CanvasCapStyle.Round;
                     }
-                    if (!USE_LINES) canvas.DrawGeometry(CanvasGeometry.CreatePath(line.chartPath), line.paint, line.getStrokeWidth(), line.style);
-                    //else canvas.DrawLine(line.linesPath, 0, j, line.paint);
+                    if (!USE_LINES) canvas.DrawGeometry(CanvasGeometry.CreatePath(line.chartPath), line.paint);
+                    //else canvas.DrawLines(line.linesPath, 0, j, line.paint);
 
                     //canvas.restore();
                 }
@@ -202,7 +199,7 @@ namespace Charts
                     if (!line.enabled && line.alpha == 0) continue;
                     line.bottomLinePaint.A = (byte)(255 * line.alpha);
                     //if (USE_LINES)
-                    //    canvas.DrawLine(line.linesPathBottom, 0, line.linesPathBottomSize, line.bottomLinePaint);
+                    //    canvas.DrawLines(line.linesPathBottom, 0, line.linesPathBottomSize, line.bottomLinePaint);
                     //else
                         canvas.DrawGeometry(CanvasGeometry.CreatePath(line.bottomLinePath), line.bottomLinePaint);
                 }

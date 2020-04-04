@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Charts"
+    xmlns:dv="using:Charts.DataView"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
@@ -14,6 +15,24 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <local:LinearChartView x:Name="test" Loaded="test_Loaded"/>
+        <local:StackBarChartView x:Name="test" Loaded="test_Loaded"/>
+
+        <ItemsControl x:Name="Checks" Grid.Row="3">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="dv:LineViewData">
+                    <Border>
+                        <Border.Background>
+                            <SolidColorBrush Color="{x:Bind line.color}"/>
+                        </Border.Background>
+                        <CheckBox IsChecked="True" Content="{x:Bind line.name}" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked"/>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
     </Grid>
 </Page>

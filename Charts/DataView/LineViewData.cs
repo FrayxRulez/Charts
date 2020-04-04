@@ -1,4 +1,5 @@
-﻿using Microsoft.Graphics.Canvas.Geometry;
+﻿using Charts.Data;
+using Microsoft.Graphics.Canvas.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,15 +12,14 @@ namespace Charts.DataView
     public class LineViewData
     {
 
-        public readonly Data.ChartData.Line line;
-        public /*readonly*/ Color bottomLinePaint;
-        public /*readonly*/ Color paint;
-        public CanvasStrokeStyle style;
-        public readonly Color selectionPaint;
+        public readonly ChartData.Line line;
+        public readonly Paint bottomLinePaint = new Paint();
+        public readonly Paint paint = new Paint();
+        public readonly Paint selectionPaint = new Paint();
 
         public CanvasPathBuilder bottomLinePath;
         public CanvasPathBuilder chartPath;
-        //public readonly Path chartPathPicker = new Path();
+        public CanvasPathBuilder chartPathPicker;
         public ValueAnimator animatorIn;
         public ValueAnimator animatorOut;
         public int linesPathBottomSize;
@@ -27,19 +27,17 @@ namespace Charts.DataView
         public float[] linesPath;
         public float[] linesPathBottom;
 
-        public int lineColor;
+        public Color lineColor;
 
         public bool enabled = true;
 
         public float alpha = 1f;
 
-        // !!!
-        public float getStrokeWidth() => 2;
-
-
-        public LineViewData(Data.ChartData.Line line)
+        public LineViewData(ChartData.Line line)
         {
             this.line = line;
+
+            lineColor = line.color;
 
             //paint.setStrokeWidth(AndroidUtilities.dpf2(2));
             //paint.setStyle(Paint.Style.STROKE);
@@ -48,20 +46,18 @@ namespace Charts.DataView
             //    paint.setStrokeJoin(Paint.Join.ROUND);
             //}
             //paint.setColor(line.color);
-            paint = line.color;
+            paint.StrokeWidth = 2;
+            paint.StrokeCap = CanvasCapStyle.Round;
+            paint.Color = line.color;
 
-            style = new CanvasStrokeStyle();
-
-            //bottomLinePaint.setStrokeWidth(AndroidUtilities.dpf2(1));
+            bottomLinePaint.StrokeWidth = 1;
             //bottomLinePaint.setStyle(Paint.Style.STROKE);
-            //bottomLinePaint.setColor(line.color);
-            bottomLinePaint = line.color;
+            bottomLinePaint.Color = line.color;
 
-            //selectionPaint.setStrokeWidth(AndroidUtilities.dpf2(10));
+            selectionPaint.StrokeWidth = 10;
             //selectionPaint.setStyle(Paint.Style.STROKE);
-            //selectionPaint.setStrokeCap(Paint.Cap.ROUND);
-            //selectionPaint.setColor(line.color);
-            selectionPaint = line.color;
+            selectionPaint.StrokeCap = CanvasCapStyle.Round;
+            selectionPaint.Color = line.color;
 
 
             linesPath = new float[line.y.Length << 2];
