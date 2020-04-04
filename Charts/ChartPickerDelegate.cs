@@ -8,7 +8,7 @@ using Windows.Foundation;
 using Windows.UI.Input;
 using Windows.UI.Xaml.Input;
 
-namespace Charts
+namespace Unigram.Charts
 {
     public class ChartPickerDelegate
     {

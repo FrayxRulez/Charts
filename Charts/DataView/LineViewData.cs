@@ -1,4 +1,4 @@
-﻿using Charts.Data;
+﻿using Unigram.Charts.Data;
 using Microsoft.Graphics.Canvas.Geometry;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI;
 
-namespace Charts.DataView
+namespace Unigram.Charts.DataView
 {
     public class LineViewData
     {

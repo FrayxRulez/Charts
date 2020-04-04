@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charts.DataView
+namespace Unigram.Charts.DataView
 {
     public class ChartHorizontalLinesData
     {

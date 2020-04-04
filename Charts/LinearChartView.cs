@@ -1,5 +1,5 @@
-﻿using Charts.Data;
-using Charts.DataView;
+﻿using Unigram.Charts.Data;
+using Unigram.Charts.DataView;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Geometry;
 using System;
@@ -8,7 +8,7 @@ using Unigram.Common;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
-namespace Charts
+namespace Unigram.Charts
 {
     public class LinearChartView : BaseChartView<ChartData, LineViewData>
     {

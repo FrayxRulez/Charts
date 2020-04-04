@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI;
 
-namespace Charts
+namespace Unigram.Charts
 {
     public class Paint
     {

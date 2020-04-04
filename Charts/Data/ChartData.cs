@@ -10,7 +10,7 @@ using Windows.Data.Json;
 using Windows.Globalization.DateTimeFormatting;
 using Windows.UI;
 
-namespace Charts.Data
+namespace Unigram.Charts.Data
 {
     public class ChartData
     {

@@ -1,5 +1,5 @@
-﻿using Charts.Data;
-using Charts.DataView;
+﻿using Unigram.Charts.Data;
+using Unigram.Charts.DataView;
 using Microsoft.Graphics.Canvas;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Unigram.Common;
 using Windows.UI;
 
-namespace Charts
+namespace Unigram.Charts
 {
     public class BarChartView : BaseChartView<ChartData, BarViewData>
     {

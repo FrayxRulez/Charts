@@ -1,5 +1,5 @@
-﻿using Charts.Data;
-using Charts.DataView;
+﻿using Unigram.Charts.Data;
+using Unigram.Charts.DataView;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.Text;
@@ -18,7 +18,7 @@ using Windows.UI.Xaml.Input;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
-namespace Charts
+namespace Unigram.Charts
 {
     public abstract class BaseChartView<T, L> : Grid, ChartPickerDelegate.Listener where T : ChartData where L : LineViewData
     {

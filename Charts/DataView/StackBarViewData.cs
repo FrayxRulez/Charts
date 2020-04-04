@@ -1,4 +1,4 @@
-﻿using Charts.Data;
+﻿using Unigram.Charts.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Unigram.Common;
 using Windows.UI;
 
-namespace Charts.DataView
+namespace Unigram.Charts.DataView
 {
     public class StackBarViewData : LineViewData
     {

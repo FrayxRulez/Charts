@@ -1,5 +1,5 @@
-﻿using Charts.Data;
-using Charts.DataView;
+﻿using Unigram.Charts.Data;
+using Unigram.Charts.DataView;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.Text;
@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using Unigram.Common;
 using Windows.UI;
 
-namespace Charts
+namespace Unigram.Charts
 {
     public class DoubleLinearChartView : BaseChartView<DoubleLinearChartData, LineViewData>
     {

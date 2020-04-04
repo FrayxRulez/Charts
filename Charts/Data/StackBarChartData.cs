@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Data.Json;
 
-namespace Charts.Data
+namespace Unigram.Charts.Data
 {
     public class StackBarChartData : ChartData
     {

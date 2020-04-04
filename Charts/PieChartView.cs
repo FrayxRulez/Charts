@@ -1,5 +1,5 @@
-﻿using Charts.Data;
-using Charts.DataView;
+﻿using Unigram.Charts.Data;
+using Unigram.Charts.DataView;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.Text;
@@ -13,7 +13,7 @@ using Unigram.Common;
 using Windows.Foundation;
 using Windows.UI;
 
-namespace Charts
+namespace Unigram.Charts
 {
     public class PieChartView : StackLinearChartView<PieChartViewData>
     {
