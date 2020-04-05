@@ -20,7 +20,14 @@ using Windows.UI.Xaml.Input;
 
 namespace Unigram.Charts
 {
-    public abstract class BaseChartView<T, L> : Grid, ChartPickerDelegate.Listener where T : ChartData where L : LineViewData
+    public abstract class BaseChartView : Grid
+    {
+        public abstract void SetDataPublic(ChartData data);
+
+        public abstract List<LineViewData> GetLines();
+    }
+
+    public abstract class BaseChartView<T, L> : BaseChartView, ChartPickerDelegate.Listener where T : ChartData where L : LineViewData
     {
 
         public SharedUiComponents sharedUiComponents;
@@ -248,6 +255,11 @@ namespace Unigram.Charts
             canvas = new CanvasControl();
             canvas.Draw += (s, args) =>
             {
+                if (ActualWidth == 0 || ActualHeight == 0)
+                {
+                    return;
+                }
+
                 onDraw(args.DrawingSession);
             };
 
@@ -1405,6 +1417,16 @@ namespace Unigram.Charts
                     minValue = lineMin;
             }
             return minValue;
+        }
+
+        public override void SetDataPublic(ChartData data)
+        {
+            setData((T)data);
+        }
+
+        public override List<LineViewData> GetLines()
+        {
+            return lines.Cast<LineViewData>().ToList();
         }
 
         public virtual void setData(T chartData)
