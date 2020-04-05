@@ -238,11 +238,13 @@ namespace Unigram.Charts
 
         protected int getMeasuredHeight()
         {
+            return (int)canvas.Size.Height;
             return (int)ActualHeight;
         }
 
         protected int getMeasuredWidth()
         {
+            return (int)canvas.Size.Width;
             return (int)ActualWidth;
         }
 
@@ -255,12 +257,16 @@ namespace Unigram.Charts
             canvas = new CanvasControl();
             canvas.Draw += (s, args) =>
             {
-                if (ActualWidth == 0 || ActualHeight == 0)
+                if (s.Size.IsEmpty)
                 {
                     return;
                 }
 
                 onDraw(args.DrawingSession);
+            };
+            canvas.SizeChanged += (s, args) =>
+            {
+                onMeasure(0, 0);
             };
 
             var grid = new Grid();
