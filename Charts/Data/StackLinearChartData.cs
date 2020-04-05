@@ -33,61 +33,61 @@ namespace Unigram.Charts.Data
             ySumSegmentTree = new SegmentTree(ySum);
         }
 
-        //public StackLinearChartData(ChartData data, long d)
-        //{
-        //    int index = Arrays.binarySearch(data.x, d);
-        //    int startIndex = index - 4;
-        //    int endIndex = index + 4;
+        public StackLinearChartData(ChartData data, long d)
+        {
+            int index = Array.BinarySearch(data.x, d);
+            int startIndex = index - 4;
+            int endIndex = index + 4;
 
-        //    if (startIndex < 0)
-        //    {
-        //        endIndex += -startIndex;
-        //        startIndex = 0;
-        //    }
-        //    if (endIndex > data.x.length - 1)
-        //    {
-        //        startIndex -= endIndex - data.x.length;
-        //        endIndex = data.x.length - 1;
-        //    }
+            if (startIndex < 0)
+            {
+                endIndex += -startIndex;
+                startIndex = 0;
+            }
+            if (endIndex > data.x.Length - 1)
+            {
+                startIndex -= endIndex - data.x.Length;
+                endIndex = data.x.Length - 1;
+            }
 
-        //    if (startIndex < 0)
-        //    {
-        //        startIndex = 0;
-        //    }
+            if (startIndex < 0)
+            {
+                startIndex = 0;
+            }
 
-        //    int n = endIndex - startIndex + 1;
+            int n = endIndex - startIndex + 1;
 
-        //    x = new long[n];
-        //    xPercentage = new float[n];
-        //    lines = new ArrayList<>();
+            x = new long[n];
+            xPercentage = new float[n];
+            lines = new List<Line>();
 
-        //    for (int i = 0; i < data.lines.size(); i++)
-        //    {
-        //        Line line = new Line();
-        //        line.y = new int[n];
-        //        line.id = data.lines.get(i).id;
-        //        line.name = data.lines.get(i).name;
-        //        line.colorKey = data.lines.get(i).colorKey;
-        //        line.color = data.lines.get(i).color;
-        //        line.colorDark = data.lines.get(i).colorDark;
-        //        lines.add(line);
-        //    }
-        //    int i = 0;
-        //    for (int j = startIndex; j <= endIndex; j++)
-        //    {
-        //        x[i] = data.x[j];
+            for (int k = 0; k < data.lines.Count; k++)
+            {
+                Line line = new Line();
+                line.y = new int[n];
+                line.id = data.lines[k].id;
+                line.name = data.lines[k].name;
+                line.colorKey = data.lines[k].colorKey;
+                line.color = data.lines[k].color;
+                line.colorDark = data.lines[k].colorDark;
+                lines.Add(line);
+            }
+            int i = 0;
+            for (int j = startIndex; j <= endIndex; j++)
+            {
+                x[i] = data.x[j];
 
-        //        for (int k = 0; k < lines.size(); k++)
-        //        {
-        //            Line line = lines.get(k);
-        //            line.y[i] = data.lines.get(k).y[j];
-        //        }
-        //        i++;
-        //    }
+                for (int k = 0; k < lines.Count; k++)
+                {
+                    Line line = lines[k];
+                    line.y[i] = data.lines[k].y[j];
+                }
+                i++;
+            }
 
-        //    timeStep = 86400000L;
-        //    measure();
-        //}
+            timeStep = 86400000L;
+            measure();
+        }
 
         protected override void measure()
         {
