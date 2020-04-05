@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -168,12 +169,12 @@ namespace Unigram.Charts.DataView
                 if (num_ == (int)num_)
                 {
                     //return String.Format(Locale.ENGLISH, "%s%s", formatCount((int)num_), s[count]);
-                    return String.Format("{0}{1}", formatCount((int)num_), s[count]);
+                    return String.Format(CultureInfo.InvariantCulture, "{0}{1}", formatCount((int)num_), s[count]);
                 }
                 else
                 {
                     //return String.Format(Locale.ENGLISH, "%.1f%s", num_, s[count]);
-                    return String.Format("%.1f%s", num_, s[count]);
+                    return String.Format(CultureInfo.InvariantCulture, "{0:F1}{1}", num_, s[count]);
                 }
             }
         }
@@ -197,7 +198,7 @@ namespace Unigram.Charts.DataView
                 if (count > 0)
                 {
                     //strings.Add(String.format(Locale.ENGLISH, "%03d", mod));
-                    strings.Add(String.Format("%03d", mod));
+                    strings.Add(String.Format(CultureInfo.InvariantCulture, "{0:D3}", mod));
                 }
                 else
                 {

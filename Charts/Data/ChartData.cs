@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -158,7 +159,7 @@ namespace Unigram.Charts.Data
                 if (timeStep == 1)
                 {
                     //daysLookup[i] = String.Format(Locale.ENGLISH, "%02d:00", i);
-                    daysLookup[i] = string.Format("{0:N2}:00", i);
+                    daysLookup[i] = string.Format(CultureInfo.InvariantCulture, "{0:D2}:00", i);
                 }
                 else
                 {
