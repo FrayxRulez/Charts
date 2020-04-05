@@ -15,7 +15,12 @@ using Windows.UI;
 
 namespace Unigram.Charts
 {
-    public class StackLinearChartView<T> : BaseChartView<StackLinearChartData, T> where T : StackLinearViewData
+    public class StackLinearChartView : StackLinearChartView<StackLinearViewData>
+    {
+
+    }
+
+    public abstract class StackLinearChartView<T> : BaseChartView<StackLinearChartData, T> where T : StackLinearViewData
     {
         public StackLinearChartView()
         {
@@ -179,8 +184,6 @@ namespace Unigram.Charts
                             endXPoint = xPoint;
                         }
 
-                        line.chartPath.EndFigure(CanvasFigureLoop.Open);
-
                         stackOffset += height;
                     }
                 }
@@ -188,16 +191,23 @@ namespace Unigram.Charts
 
                 //canvas.save();
                 //canvas.clipRect(startXPoint, SIGNATURE_TEXT_HEIGHT, endXPoint, getMeasuredHeight() - chartBottom);
+                var clip = canvas.CreateLayer(1, createRect(startXPoint, SIGNATURE_TEXT_HEIGHT, endXPoint, getMeasuredHeight() - chartBottom));
                 for (int k = lines.Count - 1; k >= 0; k--)
                 {
                     LineViewData line = lines[k];
                     line.paint.A = (byte)transitionAlpha;
 
-                    canvas.DrawGeometry(CanvasGeometry.CreatePath(line.chartPath), line.paint);
+                    // TODO: improve this
+                    if (line.enabled)
+                    {
+                        line.chartPath.EndFigure(CanvasFigureLoop.Open);
+                    }
+                    canvas.FillGeometry(CanvasGeometry.CreatePath(line.chartPath), line.paint.Color);
 
                     line.paint.A = 255;
                 }
                 //canvas.restore();
+                clip.Dispose();
                 //canvas.restore();
             }
         }
@@ -300,8 +310,6 @@ namespace Unigram.Charts
                             line.chartPathPicker.AddLine(new Vector2(pickerWidth, pikerHeight));
                         }
 
-                        line.chartPathPicker.EndFigure(CanvasFigureLoop.Open);
-
 
                         stackOffset += height;
 
@@ -311,7 +319,13 @@ namespace Unigram.Charts
                 for (int k = lines.Count - 1; k >= 0; k--)
                 {
                     LineViewData line = lines[k];
-                    canvas.DrawGeometry(CanvasGeometry.CreatePath(line.chartPathPicker), line.paint);
+
+                    // TODO: improve this
+                    if (line.enabled)
+                    {
+                        line.chartPathPicker.EndFigure(CanvasFigureLoop.Open);
+                    }
+                    canvas.FillGeometry(CanvasGeometry.CreatePath(line.chartPathPicker), line.paint.Color);
                 }
             }
         }
