@@ -27,7 +27,13 @@ namespace Unigram.Charts.DataView
         //public void updateColors()
         //{
         //    super.updateColors();
-        //    blendColor = Extensions.blendARGB(Theme.getColor(Theme.key_windowBackgroundWhite), lineColor, 0.3f);
         //}
+
+        public override void updateColors()
+        {
+            base.updateColors();
+            //blendColor = Extensions.blendARGB(Theme.getColor(Theme.key_windowBackgroundWhite), lineColor, 0.3f);
+            blendColor = Extensions.blendARGB(Colors.White, lineColor, 0.3f);
+        }
     }
 }

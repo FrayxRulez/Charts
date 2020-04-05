@@ -62,9 +62,11 @@ namespace Unigram.Charts.DataView
 
             linesPath = new float[line.y.Length << 2];
             linesPathBottom = new float[line.y.Length << 2];
+
+            updateColors();
         }
 
-        public void updateColors()
+        public virtual void updateColors()
         {
             //if (line.colorKey != null && Theme.hasThemeKey(line.colorKey))
             //{
