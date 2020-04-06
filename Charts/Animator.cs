@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 
@@ -12,7 +13,9 @@ namespace Unigram.Charts
         protected readonly List<AnimatorUpdateListener> _listeners = new List<AnimatorUpdateListener>();
         protected readonly List<AnimatorUpdateListener> _updateListeners = new List<AnimatorUpdateListener>();
 
-        internal void cancel()
+        protected readonly object _listenersLock = new object();
+
+        internal virtual void cancel()
         {
             //throw new NotImplementedException();
         }
@@ -27,18 +30,27 @@ namespace Unigram.Charts
 
         internal void addUpdateListener(AnimatorUpdateListener l)
         {
-            _updateListeners.Add(l);
+            lock (_listenersLock)
+            {
+                _updateListeners.Add(l);
+            }
         }
 
         internal void addListener(AnimatorUpdateListener l)
         {
-            _listeners.Add(l);
+            lock (_listenersLock)
+            {
+                _listeners.Add(l);
+            }
         }
 
         internal void removeAllListeners()
         {
-            _updateListeners.Clear();
-            _listeners.Clear();
+            lock (_listenersLock)
+            {
+                _updateListeners.Clear();
+                _listeners.Clear();
+            }
         }
 
         internal virtual object getAnimatedValue()
@@ -69,6 +81,16 @@ namespace Unigram.Charts
                 animator.start();
             }
         }
+
+        internal override void cancel()
+        {
+            base.cancel();
+
+            foreach (var animator in _animators)
+            {
+                animator.cancel();
+            }
+        }
     }
 
     public class ValueAnimator : Animator
@@ -76,11 +98,12 @@ namespace Unigram.Charts
         private readonly float _f1;
         private readonly float _f2;
 
-        private readonly DispatcherTimer _timer;
+        private readonly Timer _timer;
 
-        private DateTime _last;
-        private TimeSpan _progress;
-        private TimeSpan _duration;
+        private int _begin;
+        private int _duration = 300;
+
+        private float _result;
 
         private FastOutSlowInInterpolator _interpolator;
 
@@ -89,49 +112,84 @@ namespace Unigram.Charts
             _f1 = f1;
             _f2 = f2;
 
-            _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromMilliseconds(1000d / 30d);
-            _timer.Tick += OnTick;
+            _timer = new Timer(OnTick, null, Timeout.Infinite, Timeout.Infinite);
+            //_timer.Interval = TimeSpan.FromMilliseconds(1000d / 30d);
+            //_timer.Tick += OnTick;
         }
 
-        //internal override void start()
-        //{
-        //    _last = DateTime.Now;
-        //    _timer.Start();
-        //}
-
-        private void OnTick(object sender, object e)
+        internal override void start()
         {
-            var diff = DateTime.Now - _last;
-            var progress = _progress + diff;
-
-            var maximum = _f2 - _f1;
-            var value = maximum * (float)(progress / _duration);
-
-            //if (_interpolator != null)
-            //{
-            //    value = _interpolator.getInterpolation(value);
-            //}
-
-            if (value >= _f2)
+            if (_f1 == _f2)
             {
-                _timer.Stop();
+                return;
+            }
 
+            _begin = Environment.TickCount;
+            _timer.Change(TimeSpan.Zero, TimeSpan.FromMilliseconds(1000d / 30d));
+        }
+
+        internal override void cancel()
+        {
+            _begin = Timeout.Infinite;
+            _timer.Change(Timeout.Infinite, Timeout.Infinite);
+        }
+
+        private void OnTick(object sender)
+        {
+            var tick = Environment.TickCount;
+            if (tick >= _begin + _duration)
+            {
+                System.Diagnostics.Debug.WriteLine($"_f1: {_f1}; _f2: {_f2}; _result: {_result} -> timeout");
+
+                _result = _f2;
+
+                complete();
+                return;
+            }
+
+            var diff = tick - _begin;
+            var perc = (float)diff / _duration;
+
+            if (_interpolator != null)
+            {
+                perc = _interpolator.getInterpolation(perc);
+            }
+
+            var maximum = Math.Max(_f2, _f1) - Math.Min(_f1, _f2);
+            var value = maximum * (_f2 > _f1 ? perc : 1 - perc);
+
+            _result = _f2 > _f1 ? Math.Min(_f2, value) : Math.Max(_f2, value);
+
+            System.Diagnostics.Debug.WriteLine($"_f1: {_f1}; _f2: {_f2}; _result: {_result}");
+
+            if ((_f2 > _f1 && _result >= _f2) || (_f2 < _f1 && _result <= _f2))
+            {
+                complete();
+            }
+            else
+            {
+                lock (_listenersLock)
+                {
+                    foreach (var l in _updateListeners)
+                    {
+                        l.Action(this);
+                    }
+                }
+            }
+        }
+
+        private void complete()
+        {
+            _begin = Timeout.Infinite;
+            _timer.Change(Timeout.Infinite, Timeout.Infinite);
+
+            lock (_listenersLock)
+            {
                 foreach (var l in _updateListeners.Union(_listeners))
                 {
                     l.Action(this);
                 }
             }
-            else
-            {
-                foreach (var l in _updateListeners)
-                {
-                    l.Action(this);
-                }
-            }
-
-            _last = DateTime.Now;
-            _progress = progress;
         }
 
         internal static ValueAnimator ofFloat(float f1, float f2)
@@ -141,7 +199,7 @@ namespace Unigram.Charts
 
         internal ValueAnimator setDuration(int duration)
         {
-            _duration = TimeSpan.FromMilliseconds(duration);
+            _duration = duration;
             return this;
         }
 
@@ -153,15 +211,12 @@ namespace Unigram.Charts
 
         internal bool isRunning()
         {
-            return false;
+            return _begin != Timeout.Infinite;
         }
 
         internal override object getAnimatedValue()
         {
-            //var maximum = _f2 - _f1;
-            //var value = maximum * (float)(_progress / _duration);
-
-            //return value;
+            return _result;
             return _f2;
         }
     }
