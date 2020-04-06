@@ -120,9 +120,14 @@ namespace Unigram.Common
             return (int)(rect.Top + rect.Bottom) >> 1;
         }
 
-        public static int HighestOneBit(this int number)
+        public static int HighestOneBit(this int i)
         {
-            return (int)Math.Pow(2, Convert.ToString(number, 2).Length - 1);
+            i |= (i >> 1);
+            i |= (i >> 2);
+            i |= (i >> 4);
+            i |= (i >> 8);
+            i |= (i >> 16);
+            return i - (i >> 1);
         }
 
         public static Color ToColor(this int color)
