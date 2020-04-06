@@ -46,8 +46,8 @@ namespace Unigram.Charts
 
                 for (int k = 0; k < lines.Count; k++)
                 {
-                    lines[k].chartPath = new CanvasPathBuilder(canvas);
-                    lines[k].chartPathPicker = new CanvasPathBuilder(canvas);
+                    lines[k].chartPath = null;
+                    lines[k].chartPathPicker = null;
                 }
 
                 //canvas.save();
@@ -155,6 +155,7 @@ namespace Unigram.Charts
 
                         if (i == localStart)
                         {
+                            line.chartPath = new CanvasPathBuilder(canvas);
                             line.chartPath.BeginFigure(new Vector2(0, getMeasuredHeight()));
                             startXPoint = xPoint;
                             skipPoints[k] = false;
@@ -197,12 +198,11 @@ namespace Unigram.Charts
                     LineViewData line = lines[k];
                     line.paint.A = (byte)transitionAlpha;
 
-                    // TODO: improve this
-                    if (line.enabled)
+                    if (line.chartPath != null)
                     {
                         line.chartPath.EndFigure(CanvasFigureLoop.Open);
+                        canvas.FillGeometry(CanvasGeometry.CreatePath(line.chartPath), line.paint.Color);
                     }
-                    canvas.FillGeometry(CanvasGeometry.CreatePath(line.chartPath), line.paint.Color);
 
                     line.paint.A = 255;
                 }
@@ -219,7 +219,7 @@ namespace Unigram.Charts
                 int nl = lines.Count;
                 for (int k = 0; k < nl; k++)
                 {
-                    lines[k].chartPathPicker = new CanvasPathBuilder(canvas);
+                    lines[k].chartPathPicker = null;
                 }
 
                 int n = chartData.simplifiedSize;
@@ -283,6 +283,7 @@ namespace Unigram.Charts
 
                         if (i == 0)
                         {
+                            line.chartPathPicker = new CanvasPathBuilder(canvas);
                             line.chartPathPicker.BeginFigure(new Vector2(0, pikerHeight));
                             skipPoints[k] = false;
                         }
@@ -320,12 +321,11 @@ namespace Unigram.Charts
                 {
                     LineViewData line = lines[k];
 
-                    // TODO: improve this
-                    if (line.enabled)
+                    if (line.chartPathPicker != null)
                     {
                         line.chartPathPicker.EndFigure(CanvasFigureLoop.Open);
+                        canvas.FillGeometry(CanvasGeometry.CreatePath(line.chartPathPicker), line.paint.Color);
                     }
-                    canvas.FillGeometry(CanvasGeometry.CreatePath(line.chartPathPicker), line.paint.Color);
                 }
             }
         }
