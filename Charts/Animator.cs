@@ -8,17 +8,21 @@ using Windows.UI.Xaml;
 
 namespace Unigram.Charts
 {
-    public class Animator
+    public abstract class Animator
     {
         protected readonly List<AnimatorUpdateListener> _listeners = new List<AnimatorUpdateListener>();
         protected readonly List<AnimatorUpdateListener> _updateListeners = new List<AnimatorUpdateListener>();
 
         protected readonly object _listenersLock = new object();
 
-        internal virtual void cancel()
+        protected readonly ChartPickerDelegate.Listener _listener;
+
+        public Animator(ChartPickerDelegate.Listener listener)
         {
-            //throw new NotImplementedException();
+            _listener = listener;
         }
+
+        internal abstract void cancel();
 
         internal virtual void start()
         {
@@ -58,11 +62,17 @@ namespace Unigram.Charts
             return null;
         }
 
+        internal abstract void onTick();
     }
 
     public class AnimatorSet : Animator
     {
         private readonly List<Animator> _animators = new List<Animator>();
+
+        public AnimatorSet(ChartPickerDelegate.Listener listener)
+            : base(listener)
+        {
+        }
 
         internal void playTogether(params Animator[] valueAnimator)
         {
@@ -74,8 +84,6 @@ namespace Unigram.Charts
 
         internal override void start()
         {
-            base.start();
-
             foreach (var animator in _animators)
             {
                 animator.start();
@@ -84,11 +92,17 @@ namespace Unigram.Charts
 
         internal override void cancel()
         {
-            base.cancel();
-
             foreach (var animator in _animators)
             {
                 animator.cancel();
+            }
+        }
+
+        internal override void onTick()
+        {
+            foreach (var animator in _animators)
+            {
+                animator.onTick();
             }
         }
     }
@@ -98,7 +112,7 @@ namespace Unigram.Charts
         private readonly float _f1;
         private readonly float _f2;
 
-        private readonly Timer _timer;
+        //private readonly Timer _timer;
 
         private int _begin;
         private int _duration = 300;
@@ -107,12 +121,13 @@ namespace Unigram.Charts
 
         private FastOutSlowInInterpolator _interpolator;
 
-        public ValueAnimator(float f1, float f2)
+        public ValueAnimator(ChartPickerDelegate.Listener listener, float f1, float f2)
+            : base(listener)
         {
-            _f1 = f1;
+            _f1 = _result = f1;
             _f2 = f2;
 
-            _timer = new Timer(OnTick, null, Timeout.Infinite, Timeout.Infinite);
+            //_timer = new Timer(OnTick, null, Timeout.Infinite, Timeout.Infinite);
             //_timer.Interval = TimeSpan.FromMilliseconds(1000d / 30d);
             //_timer.Tick += OnTick;
         }
@@ -125,21 +140,31 @@ namespace Unigram.Charts
             }
 
             _begin = Environment.TickCount;
-            _timer.Change(TimeSpan.Zero, TimeSpan.FromMilliseconds(1000d / 30d));
+            _listener.change(this, true);
+            //_timer.Change(TimeSpan.Zero, TimeSpan.FromMilliseconds(1000d / 30d));
         }
 
         internal override void cancel()
         {
             _begin = Timeout.Infinite;
-            _timer.Change(Timeout.Infinite, Timeout.Infinite);
+            _listener.change(this, false);
+            //_timer.Change(Timeout.Infinite, Timeout.Infinite);
+
+            lock (_listenersLock)
+            {
+                foreach (var l in _listeners)
+                {
+                    l.Action(this);
+                }
+            }
         }
 
-        private void OnTick(object sender)
+        internal override void onTick()
         {
             var tick = Environment.TickCount;
             if (tick >= _begin + _duration)
             {
-                System.Diagnostics.Debug.WriteLine($"_f1: {_f1}; _f2: {_f2}; _result: {_result} -> timeout");
+                //System.Diagnostics.Debug.WriteLine($"_f1: {_f1}; _f2: {_f2}; _result: {_result} -> timeout");
 
                 _result = _f2;
 
@@ -155,12 +180,22 @@ namespace Unigram.Charts
                 perc = _interpolator.getInterpolation(perc);
             }
 
-            var maximum = Math.Max(_f2, _f1) - Math.Min(_f1, _f2);
-            var value = maximum * (_f2 > _f1 ? perc : 1 - perc);
+            if (_f2 > _f1)
+            {
+                var maximum = _f2 - _f1;
+                var value = _f1 + (maximum * perc);
 
-            _result = _f2 > _f1 ? Math.Min(_f2, value) : Math.Max(_f2, value);
+                _result = Math.Min(_f2, value);
+            }
+            else
+            {
+                var maximum = _f1 - _f2;
+                var value = _f2 + (maximum * (1 - perc));
 
-            System.Diagnostics.Debug.WriteLine($"_f1: {_f1}; _f2: {_f2}; _result: {_result}");
+                _result = Math.Max(_f2, value);
+            }
+
+            //System.Diagnostics.Debug.WriteLine($"_f1: {_f1}; _f2: {_f2}; _result: {_result}");
 
             if ((_f2 > _f1 && _result >= _f2) || (_f2 < _f1 && _result <= _f2))
             {
@@ -181,20 +216,22 @@ namespace Unigram.Charts
         private void complete()
         {
             _begin = Timeout.Infinite;
-            _timer.Change(Timeout.Infinite, Timeout.Infinite);
+            _listener.change(this, false);
+            //_timer.Change(Timeout.Infinite, Timeout.Infinite);
 
             lock (_listenersLock)
             {
-                foreach (var l in _updateListeners.Union(_listeners))
+                //foreach (var l in _updateListeners.Union(_listeners))
+                foreach (var l in _listeners.Union(_updateListeners))
                 {
                     l.Action(this);
                 }
             }
         }
 
-        internal static ValueAnimator ofFloat(float f1, float f2)
+        internal static ValueAnimator ofFloat(ChartPickerDelegate.Listener listener, float f1, float f2)
         {
-            return new ValueAnimator(f1, f2);
+            return new ValueAnimator(listener, f1, f2);
         }
 
         internal ValueAnimator setDuration(int duration)

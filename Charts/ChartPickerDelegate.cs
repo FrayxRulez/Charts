@@ -93,9 +93,9 @@ namespace Unigram.Charts
 
             public void captured()
             {
-                a = ValueAnimator.ofFloat(0, 1f);
+                a = ValueAnimator.ofFloat(view, 0, 1f);
                 a.setDuration(600);
-                //a.setInterpolator(BaseChartView.INTERPOLATOR);
+                a.setInterpolator(BaseChartView.INTERPOLATOR);
                 a.addUpdateListener(new AnimatorUpdateListener(animation =>
                 {
                     aValue = (float)animation.getAnimatedValue();
@@ -275,7 +275,6 @@ namespace Unigram.Charts
 
         public bool uncapture(PointerPoint point, int pointerIndex)
         {
-#if !NO
             if (pointerIndex == 0)
             {
                 if (tryMoveTo)
@@ -304,7 +303,7 @@ namespace Unigram.Charts
                         float moveFromLeft = pickerStart;
                         float moveFromRight = pickerEnd;
 
-                        moveToAnimator = ValueAnimator.ofFloat(0f, 1f);
+                        moveToAnimator = ValueAnimator.ofFloat(view, 0f, 1f);
                         float finalMoveToLeft = moveToLeft;
                         float finalMoveToRight = moveToRight;
                         view.onPickerJumpTo(finalMoveToLeft, finalMoveToRight, true);
@@ -315,7 +314,7 @@ namespace Unigram.Charts
                             pickerEnd = moveFromRight + (finalMoveToRight - moveFromRight) * v;
                             view.onPickerJumpTo(finalMoveToLeft, finalMoveToRight, false);
                         }));
-                        //moveToAnimator.setInterpolator(BaseChartView.INTERPOLATOR);
+                        moveToAnimator.setInterpolator(BaseChartView.INTERPOLATOR);
                         moveToAnimator.start();
                     }
                     return true;
@@ -334,7 +333,6 @@ namespace Unigram.Charts
                 if (capturedStates[1] != null) capturedStates[1].uncapture();
                 capturedStates[1] = null;
             }
-#endif
             return false;
         }
 
@@ -351,6 +349,8 @@ namespace Unigram.Charts
             void onPickerDataChanged();
             void onPickerJumpTo(float start, float end, bool force);
             void invalidate();
+
+            void change(Animator animator, bool start);
         }
 
     }

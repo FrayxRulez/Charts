@@ -25,6 +25,30 @@ namespace Unigram.Charts
         public abstract void SetDataPublic(ChartData data);
 
         public abstract List<LineViewData> GetLines();
+
+        protected readonly List<Animator> _animators = new List<Animator>();
+        protected readonly object _animatorsLock = new object();
+
+        public void change(Animator animator, bool enable)
+        {
+            lock (_animatorsLock)
+            {
+                if (enable)
+                {
+                    _animators.Add(animator);
+                }
+                else
+                {
+                    _animators.Remove(animator);
+                }
+
+                paused = _animators.Count < 1;
+            }
+        }
+
+        protected virtual bool paused { get; set; }
+
+        public static FastOutSlowInInterpolator INTERPOLATOR = new FastOutSlowInInterpolator();
     }
 
     public abstract class BaseChartView<T, L> : BaseChartView, ChartPickerDelegate.Listener where T : ChartData where L : LineViewData
@@ -65,7 +89,6 @@ namespace Unigram.Charts
         public const bool USE_LINES = false;
         //protected const bool ANIMATE_PICKER_SIZES = android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP;
         protected const bool ANIMATE_PICKER_SIZES = true;
-        public static FastOutSlowInInterpolator INTERPOLATOR = new FastOutSlowInInterpolator();
 
         protected int chartBottom;
         public float currentMaxHeight = 250;
@@ -233,7 +256,10 @@ namespace Unigram.Charts
 
         public void invalidate()
         {
-            canvas.Invalidate();
+            //if (paused)
+            {
+                canvas.Invalidate();
+            }
         }
 
         protected int getMeasuredHeight()
@@ -249,6 +275,10 @@ namespace Unigram.Charts
         }
 
         private CanvasControl canvas;
+        private DispatcherTimer timer;
+        private System.Threading.Timer boh;
+
+        //protected override bool paused { get => canvas.Paused; set => canvas.Paused = value; }
 
         protected virtual void init()
         {
@@ -262,6 +292,16 @@ namespace Unigram.Charts
                     return;
                 }
 
+                //lock (_animatorsLock)
+                //{
+                //    foreach (var animator in _animators.ToArray())
+                //    {
+                //        animator.onTick();
+                //    }
+
+                //    paused = _animators.Count < 1;
+                //}
+
                 onDraw(args.DrawingSession);
             };
             canvas.SizeChanged += (s, args) =>
@@ -269,13 +309,42 @@ namespace Unigram.Charts
                 onMeasure(0, 0);
             };
 
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromMilliseconds(1000 / 60);
+            timer.Tick += (s, args) =>
+            {
+                lock (_animatorsLock)
+                {
+                    foreach (var animator in _animators.ToArray())
+                    {
+                        animator.onTick();
+                    }
+
+                    //paused = _animators.Count < 1;
+                }
+            };
+            //timer.Start();
+
+            boh = new System.Threading.Timer(new System.Threading.TimerCallback(state =>
+            {
+                lock (_animatorsLock)
+                {
+                    foreach (var animator in _animators.ToArray())
+                    {
+                        animator.onTick();
+                    }
+
+                    //paused = _animators.Count < 1;
+                }
+            }), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000 / 60));
+
             var grid = new Grid();
             canvas.Background = new Windows.UI.Xaml.Media.SolidColorBrush() { Color = Windows.UI.Colors.Transparent };
             canvas.PointerPressed += OnPointerPressed;
             canvas.PointerMoved += OnPointerMoved;
             canvas.PointerReleased += OnPointerReleased;
-            canvas.PointerCanceled += OnPointerReleased;
-            canvas.PointerCaptureLost += OnPointerReleased;
+            //canvas.PointerCanceled += OnPointerReleased;
+            //canvas.PointerCaptureLost += OnPointerReleased;
 
             Children.Add(canvas);
             //Children.Add(grid);
@@ -518,7 +587,6 @@ namespace Unigram.Charts
             }
         }
 
-
         protected virtual void drawBottomSignature(CanvasDrawingSession canvas)
         {
             if (chartData == null) return;
@@ -562,13 +630,13 @@ namespace Unigram.Charts
 
 
                 float offset = chartFullWidth * (pickerDelegate.pickerStart) - HORIZONTAL_PADDING;
-
+                float fullWidth = chartFullWidth;
                 for (int i = start; i < end; i += step)
                 {
                     if (i < 0 || i >= chartData.x.Length - 1) continue;
                     float xPercentage = (float)(chartData.x[i] - chartData.x[0]) /
                             (float)((chartData.x[chartData.x.Length - 1] - chartData.x[0]));
-                    float xPoint = xPercentage * chartFullWidth - offset;
+                    float xPoint = xPercentage * fullWidth - offset;
                     float xPointOffset = xPoint - BOTTOM_SIGNATURE_OFFSET;
                     if (xPointOffset > 0 &&
                             xPointOffset <= chartWidth + HORIZONTAL_PADDING)
@@ -587,7 +655,8 @@ namespace Unigram.Charts
                         {
                             bottomSignaturePaint.A = (byte)(resultAlpha * bottomSignaturePaintAlpha * transitionAlpha);
                         }
-                        canvas.DrawText(chartData.getDayString(i), xPoint, getMeasuredHeight() - chartBottom + BOTTOM_SIGNATURE_TEXT_HEIGHT + 3, bottomSignaturePaint);
+                        //canvas.DrawText(chartData.getDayString(i), xPoint, getMeasuredHeight() - chartBottom + BOTTOM_SIGNATURE_TEXT_HEIGHT + 3, bottomSignaturePaint);
+                        canvas.DrawText(chartData.getDayString(i), xPoint, getMeasuredHeight() - chartBottom + 3, bottomSignaturePaint);
                     }
                 }
             }
@@ -718,7 +787,7 @@ namespace Unigram.Charts
             {
                 int y = (int)((getMeasuredHeight() - chartBottom) - chartHeight * ((a.values[i] - currentMinHeight) / (currentMaxHeight - currentMinHeight)));
                 //canvas.DrawRectangle(chartStart, y, chartEnd - chartStart, 2, linePaint, LINE_WIDTH);
-                canvas.DrawLine(chartStart, y, chartEnd - chartStart, y, linePaint);
+                canvas.DrawLine(chartStart, y, chartEnd, y, linePaint);
             }
         }
 
@@ -1098,7 +1167,7 @@ namespace Unigram.Charts
                 }
                 minMaxUpdateStep = 0;
 
-                AnimatorSet animatorSet = new AnimatorSet();
+                AnimatorSet animatorSet = new AnimatorSet(this);
                 animatorSet.playTogether(createAnimator(currentMaxHeight, newMaxHeight, heightUpdateListener));
 
                 if (useMinHeight)
@@ -1143,7 +1212,7 @@ namespace Unigram.Charts
 
         protected ValueAnimator createAnimator(float f1, float f2, AnimatorUpdateListener l)
         {
-            ValueAnimator a = ValueAnimator.ofFloat(f1, f2);
+            ValueAnimator a = ValueAnimator.ofFloat(this, f1, f2);
             a.setDuration(ANIM_DURATION);
             a.setInterpolator(INTERPOLATOR);
             a.addUpdateListener(l);
@@ -1755,10 +1824,10 @@ namespace Unigram.Charts
             {
                 animatedToPickerMaxHeight = max;
                 if (pickerAnimator != null) pickerAnimator.cancel();
-                AnimatorSet animatorSet = new AnimatorSet();
+                AnimatorSet animatorSet = new AnimatorSet(this);
                 animatorSet.playTogether(
-                        createAnimator(pickerMaxHeight, animatedToPickerMaxHeight, pickerHeightUpdateListener),
-                        createAnimator(pickerMinHeight, animatedToPickerMinHeight, pickerMinHeightUpdateListener)
+                    createAnimator(pickerMaxHeight, animatedToPickerMaxHeight, pickerHeightUpdateListener),
+                    createAnimator(pickerMinHeight, animatedToPickerMinHeight, pickerMinHeightUpdateListener)
                 );
                 pickerAnimator = animatorSet;
                 pickerAnimator.start();
