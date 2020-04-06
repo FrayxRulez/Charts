@@ -203,29 +203,28 @@ namespace Unigram.Charts.DataView
         //    return capitalize(format.format(date)) + capitalize(format2.format(date));
         //}
 
-        //private String capitalize(String s)
-        //{
-        //    if (s.Length > 0)
-        //        return char.ToUpper(s[0]) + s.Substring(1);
-        //    return s;
-        //}
+        private String capitalize(String s)
+        {
+            if (s.Length > 0)
+                return char.ToUpper(s[0]) + s.Substring(1);
+            return s;
+        }
 
 
         public String formatWholeNumber(int v)
         {
-            //float num_ = v;
-            //int count = 0;
-            //if (v < 10_000)
-            //{
-            //    return String.format("%d", v);
-            //}
-            //while (num_ >= 10_000 && count < ChartHorizontalLinesData.s.length - 1)
-            //{
-            //    num_ /= 1000;
-            //    count++;
-            //}
-            //return String.format("%.2f", num_) + ChartHorizontalLinesData.s[count];
-            return null;
+            float num_ = v;
+            int count = 0;
+            if (v < 10_000)
+            {
+                return String.Format("{0:D}", v);
+            }
+            while (num_ >= 10_000 && count < ChartHorizontalLinesData.s.Length - 1)
+            {
+                num_ /= 1000;
+                count++;
+            }
+            return String.Format("{0:F2}", num_) + ChartHorizontalLinesData.s[count];
         }
 
 

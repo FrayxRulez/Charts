@@ -42,7 +42,7 @@ namespace Unigram.Charts
             var json = JsonConvert.DeserializeObject<TLStatsBroadcastStats>(text);
 
             var obj = JsonObject.Parse(json.FollowersGraph.Json.Data);
-            var data = new StackBarChartData(obj);
+            var data = new ChartData(obj);
 
             test.setData(data);
             test.onCheckChanged();
