@@ -15,6 +15,7 @@ using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using System.Threading;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -42,13 +43,15 @@ namespace Unigram.Charts
                     _animators.Remove(animator);
                 }
 
-                paused = _animators.Count < 1;
+                change(_animators.Count < 1);
             }
         }
 
-        protected virtual bool paused { get; set; }
+        protected abstract void change(bool pause);
 
         public static FastOutSlowInInterpolator INTERPOLATOR = new FastOutSlowInInterpolator();
+
+        public abstract void onCheckChanged();
     }
 
     public abstract class BaseChartView<T, L> : BaseChartView, ChartPickerDelegate.Listener where T : ChartData where L : LineViewData
@@ -256,10 +259,19 @@ namespace Unigram.Charts
 
         public void invalidate()
         {
-            //if (paused)
-            {
                 canvas.Invalidate();
-            }
+        }
+
+        protected override void change(bool pause)
+        {
+            //if (pause)
+            //{
+            //    timer.Change(Timeout.Infinite, Timeout.Infinite);
+            //}
+            //else
+            //{
+            //    timer.Change(TimeSpan.Zero, TimeSpan.FromMilliseconds(1000 / 60));
+            //}
         }
 
         protected int getMeasuredHeight()
@@ -275,8 +287,7 @@ namespace Unigram.Charts
         }
 
         private CanvasControl canvas;
-        private DispatcherTimer timer;
-        private System.Threading.Timer boh;
+        private Timer timer;
 
         //protected override bool paused { get => canvas.Paused; set => canvas.Paused = value; }
 
@@ -309,36 +320,19 @@ namespace Unigram.Charts
                 onMeasure(0, 0);
             };
 
-            timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromMilliseconds(1000 / 60);
-            timer.Tick += (s, args) =>
+            timer = new Timer(new TimerCallback(state =>
             {
                 lock (_animatorsLock)
                 {
                     foreach (var animator in _animators.ToArray())
                     {
-                        animator.onTick();
+                        animator.tick();
                     }
 
-                    //paused = _animators.Count < 1;
-                }
-            };
-            //timer.Start();
-
-            boh = new System.Threading.Timer(new System.Threading.TimerCallback(state =>
-            {
-                lock (_animatorsLock)
-                {
-                    foreach (var animator in _animators.ToArray())
-                    {
-                        animator.onTick();
-                    }
-
-                    //paused = _animators.Count < 1;
+                    change(_animators.Count < 1);
                 }
             }), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000 / 60));
 
-            var grid = new Grid();
             canvas.Background = new Windows.UI.Xaml.Media.SolidColorBrush() { Color = Windows.UI.Colors.Transparent };
             canvas.PointerPressed += OnPointerPressed;
             canvas.PointerMoved += OnPointerMoved;
@@ -347,7 +341,6 @@ namespace Unigram.Charts
             //canvas.PointerCaptureLost += OnPointerReleased;
 
             Children.Add(canvas);
-            //Children.Add(grid);
 
             linePaint.StrokeWidth = LINE_WIDTH;
             selectedLinePaint.StrokeWidth = SELECTED_LINE_WIDTH;
@@ -1755,7 +1748,7 @@ namespace Unigram.Charts
             }
         }
 
-        public virtual void onCheckChanged()
+        public override void onCheckChanged()
         {
             onPickerDataChanged(true, true, true);
             tmpN = lines.Count;

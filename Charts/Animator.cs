@@ -24,13 +24,7 @@ namespace Unigram.Charts
 
         internal abstract void cancel();
 
-        internal virtual void start()
-        {
-            foreach (var l in _listeners.Union(_updateListeners))
-            {
-                l.Action(this);
-            }
-        }
+        internal abstract void start();
 
         internal void addUpdateListener(AnimatorUpdateListener l)
         {
@@ -62,7 +56,7 @@ namespace Unigram.Charts
             return null;
         }
 
-        internal abstract void onTick();
+        internal abstract bool tick();
     }
 
     public class AnimatorSet : Animator
@@ -98,12 +92,18 @@ namespace Unigram.Charts
             }
         }
 
-        internal override void onTick()
+        internal override bool tick()
         {
+            var completed = true;
             foreach (var animator in _animators)
             {
-                animator.onTick();
+                if (!animator.tick())
+                {
+                    completed = false;
+                }
             }
+
+            return completed;
         }
     }
 
@@ -159,7 +159,7 @@ namespace Unigram.Charts
             }
         }
 
-        internal override void onTick()
+        internal override bool tick()
         {
             var tick = Environment.TickCount;
             if (tick >= _begin + _duration)
@@ -169,7 +169,7 @@ namespace Unigram.Charts
                 _result = _f2;
 
                 complete();
-                return;
+                return true;
             }
 
             var diff = tick - _begin;
@@ -200,6 +200,7 @@ namespace Unigram.Charts
             if ((_f2 > _f1 && _result >= _f2) || (_f2 < _f1 && _result <= _f2))
             {
                 complete();
+                return true;
             }
             else
             {
@@ -211,6 +212,8 @@ namespace Unigram.Charts
                     }
                 }
             }
+
+            return false;
         }
 
         private void complete()
