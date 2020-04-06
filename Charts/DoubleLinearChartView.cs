@@ -16,6 +16,7 @@ namespace Unigram.Charts
 {
     public class DoubleLinearChartView : BaseChartView<DoubleLinearChartData, LineViewData>
     {
+        protected bool drawSteps = true;
 
         public DoubleLinearChartView()
         {
@@ -118,11 +119,28 @@ namespace Unigram.Charts
                             if (first)
                             {
                                 first = false;
-                                line.chartPath.BeginFigure(new Vector2(xPoint, yPoint));
+
+                                if (drawSteps)
+                                {
+                                    line.chartPath.BeginFigure(xPoint - (p / 2), yPoint);
+                                    line.chartPath.AddLine(xPoint + (p / 2), yPoint);
+                                }
+                                else
+                                {
+                                    line.chartPath.BeginFigure(xPoint, yPoint);
+                                }
                             }
                             else
                             {
-                                line.chartPath.AddLine(new Vector2(xPoint, yPoint));
+                                if (drawSteps)
+                                {
+                                    line.chartPath.AddLine(xPoint - (p / 2), yPoint);
+                                    line.chartPath.AddLine(xPoint + (p / 2), yPoint);
+                                }
+                                else
+                                {
+                                    line.chartPath.AddLine(xPoint, yPoint);
+                                }
                             }
                         }
                     }
@@ -165,6 +183,16 @@ namespace Unigram.Charts
                     int n = chartData.xPercentage.Length;
                     int j = 0;
 
+                    float p;
+                    if (chartData.xPercentage.Length < 2)
+                    {
+                        p = 1f;
+                    }
+                    else
+                    {
+                        p = chartData.xPercentage[1] * pickerWidth;
+                    }
+
                     int[] y = line.line.y;
 
                     //line.chartPath.reset();
@@ -197,11 +225,27 @@ namespace Unigram.Charts
                         {
                             if (i == 0)
                             {
-                                line.bottomLinePath.BeginFigure(new Vector2(xPoint, yPoint));
+                                if (drawSteps)
+                                {
+                                    line.bottomLinePath.BeginFigure(xPoint - (p / 2), yPoint);
+                                    line.bottomLinePath.AddLine(xPoint + (p / 2), yPoint);
+                                }
+                                else
+                                {
+                                    line.bottomLinePath.BeginFigure(xPoint, yPoint);
+                                }
                             }
                             else
                             {
-                                line.bottomLinePath.AddLine(new Vector2(xPoint, yPoint));
+                                if (drawSteps)
+                                {
+                                    line.bottomLinePath.AddLine(xPoint - (p / 2), yPoint);
+                                    line.bottomLinePath.AddLine(xPoint + (p / 2), yPoint);
+                                }
+                                else
+                                {
+                                    line.bottomLinePath.AddLine(xPoint, yPoint);
+                                }
                             }
                         }
                     }

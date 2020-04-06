@@ -143,6 +143,7 @@
     <Compile Include="Data\StackBarChartData.cs" />
     <Compile Include="Data\StackLinearChartData.cs" />
     <Compile Include="DoubleLinearChartView.cs" />
+    <Compile Include="DoubleStepChartView.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="FastOutSlowInInterpolator.cs" />
     <Compile Include="LinearChartView.cs" />
@@ -156,6 +157,7 @@
     <Compile Include="SegmentTree.cs" />
     <Compile Include="StackBarChartView.cs" />
     <Compile Include="StackLinearChartView.cs" />
+    <Compile Include="StepChartView.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
