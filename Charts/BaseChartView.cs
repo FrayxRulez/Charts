@@ -144,8 +144,8 @@ namespace Unigram.Charts
         protected float pickerMinHeight;
         protected float animatedToPickerMaxHeight;
         protected float animatedToPickerMinHeight;
-        protected int tmpN;
-        protected int tmpI;
+        //protected int tmpN;
+        //protected int tmpI;
         protected int bottomSignatureOffset;
 
         //private Bitmap bottomChartBitmap;
@@ -315,10 +315,10 @@ namespace Unigram.Charts
 
                 onDraw(args.DrawingSession);
             };
-            canvas.SizeChanged += (s, args) =>
-            {
-                onMeasure(0, 0);
-            };
+            //canvas.SizeChanged += (s, args) =>
+            //{
+            //    onMeasure(0, 0);
+            //};
 
             timer = new Timer(new TimerCallback(state =>
             {
@@ -447,6 +447,11 @@ namespace Unigram.Charts
             //    );
             //}
 
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            var finalSize = base.MeasureOverride(availableSize);
 
             if (getMeasuredWidth() != lastW || getMeasuredHeight() != lastH)
             {
@@ -464,9 +469,10 @@ namespace Unigram.Charts
 
                 onPickerDataChanged(false, true, false);
             }
+
+            return finalSize;
         }
 
-        //@override
         private void measureSizes()
         {
             if (getMeasuredHeight() <= 0 || getMeasuredWidth() <= 0)
@@ -518,15 +524,16 @@ namespace Unigram.Charts
             var clip = canvas.CreateLayer(1, createRect(0, chartArea.Top, getMeasuredWidth(), chartArea.Bottom));
 
             drawBottomLine(canvas);
-            tmpN = horizontalLines.Count;
-            for (tmpI = 0; tmpI < tmpN; tmpI++)
+            int tmpN = horizontalLines.Count;
+            for (int tmpI = 0; tmpI < tmpN; tmpI++)
             {
                 drawHorizontalLines(canvas, horizontalLines[tmpI]);
             }
 
             drawChart(canvas);
 
-            for (tmpI = 0; tmpI < tmpN; tmpI++)
+            tmpN = horizontalLines.Count;
+            for (int tmpI = 0; tmpI < tmpN; tmpI++)
             {
                 drawSignaturesToHorizontalLines(canvas, horizontalLines[tmpI]);
             }
@@ -584,7 +591,7 @@ namespace Unigram.Charts
         {
             if (chartData == null) return;
 
-            tmpN = bottomSignatureDate.Count;
+            int tmpN = bottomSignatureDate.Count;
 
             float transitionAlpha = 1f;
             if (transitionMode == TRANSITION_MODE_PARENT)
@@ -600,7 +607,7 @@ namespace Unigram.Charts
                 transitionAlpha = transitionParams.progress;
             }
 
-            for (tmpI = 0; tmpI < tmpN; tmpI++)
+            for (int tmpI = 0; tmpI < tmpN; tmpI++)
             {
                 int resultAlpha = bottomSignatureDate[tmpI].alpha;
                 int step = bottomSignatureDate[tmpI].step;
@@ -723,8 +730,8 @@ namespace Unigram.Charts
 
             if (drawPointOnSelection)
             {
-                tmpN = lines.Count;
-                for (tmpI = 0; tmpI < tmpN; tmpI++)
+                int tmpN = lines.Count;
+                for (int tmpI = 0; tmpI < tmpN; tmpI++)
                 {
                     LineViewData line = lines[tmpI];
                     if (!line.enabled && line.alpha == 0) continue;
@@ -1707,7 +1714,7 @@ namespace Unigram.Charts
                 currentBottomSignatures = data;
 
 
-                tmpN = bottomSignatureDate.Count;
+                int tmpN = bottomSignatureDate.Count;
                 for (int i = 0; i < tmpN; i++)
                 {
                     ChartBottomSignatureData a = bottomSignatureDate[i];
@@ -1751,8 +1758,8 @@ namespace Unigram.Charts
         public override void onCheckChanged()
         {
             onPickerDataChanged(true, true, true);
-            tmpN = lines.Count;
-            for (tmpI = 0; tmpI < tmpN; tmpI++)
+            int tmpN = lines.Count;
+            for (int tmpI = 0; tmpI < tmpN; tmpI++)
             {
                 LineViewData lineViewData = lines[tmpI];
 

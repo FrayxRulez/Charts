@@ -335,8 +335,8 @@ namespace Unigram.Charts
             tick();
             drawChart(canvas);
             drawBottomLine(canvas);
-            tmpN = horizontalLines.Count;
-            for (tmpI = 0; tmpI < tmpN; tmpI++)
+            int tmpN = horizontalLines.Count;
+            for (int tmpI = 0; tmpI < tmpN; tmpI++)
             {
                 drawHorizontalLines(canvas, horizontalLines[tmpI]);
                 drawSignaturesToHorizontalLines(canvas, horizontalLines[tmpI]);

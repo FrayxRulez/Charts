@@ -489,7 +489,13 @@ namespace Unigram.Charts
 
         protected override void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
         {
-            base.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            var finalSize = base.MeasureOverride(availableSize);
+
+            //base.onMeasure(widthMeasureSpec, heightMeasureSpec);
             if (getMeasuredWidth() != oldW)
             {
                 oldW = getMeasuredWidth();
@@ -497,6 +503,8 @@ namespace Unigram.Charts
                 MIN_TEXT_SIZE = r / 13;
                 MAX_TEXT_SIZE = r / 7;
             }
+
+            return finalSize;
         }
 
         public override void updatePicker(ChartData chartData, long d)

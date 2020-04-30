@@ -280,8 +280,8 @@ namespace Unigram.Charts
             selectedLinePaint.A = alpha;
             canvas.DrawLine(xPoint, 0, xPoint, (float)chartArea.Bottom, selectedLinePaint);
 
-            tmpN = lines.Count;
-            for (tmpI = 0; tmpI < tmpN; tmpI++)
+            int tmpN = lines.Count;
+            for (int tmpI = 0; tmpI < tmpN; tmpI++)
             {
                 LineViewData line = lines[tmpI];
                 if (!line.enabled && line.alpha == 0) continue;
